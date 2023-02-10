@@ -17,5 +17,5 @@ public class PrestamoEntidad {
     private String isbn;
     private String identificaciónUsuario;
     private int tipoUsuario;
-
+    private String fechaMaximaDevolucion;
 }

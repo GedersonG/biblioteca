@@ -1,7 +1,6 @@
 package com.ceiba.biblioteca.Core.Servicios;
 
 import com.ceiba.biblioteca.Core.DTO.MensajeDTO;
-import com.ceiba.biblioteca.Core.Entidades.PrestamoDetalleEntidad;
 import com.ceiba.biblioteca.Core.Exceptions.MyException;
 import com.ceiba.biblioteca.Core.DTO.PrestamoDTO;
 import com.ceiba.biblioteca.Core.Entidades.PrestamoEntidad;
@@ -21,9 +20,6 @@ public class PrestamoService {
 
     @Autowired
     private PrestamoRepositorio prestamoRepositorio;
-
-    @Autowired
-    private PrestamoDetalleService prestamoDetalleService;
 
     @Value("${prestamo.MAXIMO_PLAZO_USUARIO_AFILIADO}")
     private byte MAXIMO_PLAZO_USUARIO_AFILIADO;
@@ -58,9 +54,9 @@ public class PrestamoService {
      * @return El prestamo perteneciente al ID.
      * @throws Exception cuando el id no referencia a ningún prestamo.
      */
-    public Optional<PrestamoEntidad> getPrestamoPorId(int id) throws Exception {
+    public Optional<PrestamoEntidad> getPrestamoPorId(int id) throws MyException {
         if(!this.siExiste(id))
-            throw new Exception("El id " + id + " no existe.");
+            throw new MyException(new MensajeDTO("El id " + id + " no existe."));
         return this.prestamoRepositorio.findById(id);
     }
 
@@ -80,13 +76,11 @@ public class PrestamoService {
         } catch (MyException exception){
             throw new MyException(exception.getMensajeDTO());
         }
-        PrestamoEntidad prestamoNuevo = this.prestamoRepositorio.save(prestamo);
         // Calculamos el plazo maximo dependiendo el tipo de usuario.
         String fechaPlazoMaxima = calcularMaximaFechaEntrega(calcularPlazoUsuario(prestamo.getTipoUsuario()));
+        prestamo.setFechaMaximaDevolucion(fechaPlazoMaxima);
+        PrestamoEntidad prestamoNuevo = this.prestamoRepositorio.save(prestamo);
         PrestamoResponse prestamoResponse = new PrestamoResponse(prestamoNuevo.getId(), fechaPlazoMaxima);
-        // Añadimos el prestamo a la tabla PrestamoDetalle.
-        PrestamoDetalleEntidad detalleEntidad = new PrestamoDetalleEntidad(prestamoNuevo, fechaPlazoMaxima);
-        this.prestamoDetalleService.registrarPrestamoDetalle(detalleEntidad);
         return prestamoResponse;
     }
 
