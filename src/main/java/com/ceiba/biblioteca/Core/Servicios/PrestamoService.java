@@ -4,7 +4,6 @@ import com.ceiba.biblioteca.Core.DTO.MensajeDTO;
 import com.ceiba.biblioteca.Core.Exceptions.MyException;
 import com.ceiba.biblioteca.Core.DTO.PrestamoDTO;
 import com.ceiba.biblioteca.Core.Entidades.PrestamoEntidad;
-import com.ceiba.biblioteca.Core.Util.PrestamoResponse;
 import com.ceiba.biblioteca.Repositorios.PrestamoRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,7 +65,7 @@ public class PrestamoService {
      * @return Prestamo registrado
      * @throws Exception cuando los datos de llegada son inválidos, por ejemplo isbn='abcdefghijk'
      */
-    public PrestamoResponse registrarPrestamo(PrestamoEntidad prestamo) throws MyException {
+    public PrestamoEntidad registrarPrestamo(PrestamoEntidad prestamo) throws MyException {
         try{
             // Creacion de objeto PrestamoDTO, el cual va a comprobar que los datos son válidos.
             PrestamoDTO prestamoDTO = new PrestamoDTO(prestamo.getIdentificaciónUsuario(),
@@ -79,9 +78,7 @@ public class PrestamoService {
         // Calculamos el plazo maximo dependiendo el tipo de usuario.
         String fechaPlazoMaxima = calcularMaximaFechaEntrega(calcularPlazoUsuario(prestamo.getTipoUsuario()));
         prestamo.setFechaMaximaDevolucion(fechaPlazoMaxima);
-        PrestamoEntidad prestamoNuevo = this.prestamoRepositorio.save(prestamo);
-        PrestamoResponse prestamoResponse = new PrestamoResponse(prestamoNuevo.getId(), fechaPlazoMaxima);
-        return prestamoResponse;
+        return this.prestamoRepositorio.save(prestamo);
     }
 
     /**
